@@ -89,6 +89,7 @@ def get_new_commits():
                 commit_url = f"https://api.github.com/repos/{GITHUB_REPO}/commits/{com['sha']}"
                 commit_response = requests.get(commit_url)
                 commit_info = commit_response.json()
+                print("Commit Info:", commit_info)
                 commit_content = commit_info['files'][0]['patch']
 
                 print(commit_content + "\n\n")
@@ -155,8 +156,11 @@ def main():
             email_subject = f"New Commits in cvrve GitHub Repository! - {current_time}"
             email_message = "The following new commits were made:\n\n"
             
-            for commit in new_commits:
-                email_message += f"- Commit Message: {commit['message']}\n  Company: {commit['company']}\n  Title: {commit['title']}\n  Locations: {commit['locations']}\n  URL: {commit['url']}\n\n"
+            try:
+                for commit in new_commits:
+                    email_message += f"- Commit Message: {commit['message']}\n  Company: {commit['company']}\n  Title: {commit['title']}\n  Locations: {commit['locations']}\n  URL: {commit['url']}\n\n"
+            except Exception as e:
+                print(f"Error processing commits: {e}")
             
             send_email(email_subject, email_message)
             print("New commits detected and email sent.")
