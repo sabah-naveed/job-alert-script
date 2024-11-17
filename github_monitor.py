@@ -81,6 +81,10 @@ def get_new_commits():
         for com in commits:
             count += 1
             commit_message = com['commit']['message']
+            commit_dict = {
+                "sha": com['sha'],
+                "message": commit_message
+            }
             if commit_message.startswith("added listing: "):
                 commit_url = f"https://api.github.com/repos/{GITHUB_REPO}/commits/{com['sha']}"
                 commit_response = requests.get(commit_url)
