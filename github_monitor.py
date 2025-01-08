@@ -164,7 +164,7 @@ def main():
         
         if new_commits:
             est = timezone('US/Eastern')
-            current_time = datetime.now(est).strftime('%d-%m-%Y %H:%M:%S %Z')
+            current_time = datetime.now(est).strftime('%B, %d %I:%M:%S %p %Z')
             email_subject = f"New Commits in cvrve GitHub Repository! - {current_time}"
             email_message = "The following new commits were made:\n\n"
             
