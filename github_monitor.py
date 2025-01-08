@@ -12,6 +12,8 @@ from pytz import timezone
 
 load_dotenv()
 
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+
 # Configuration
 GITHUB_REPO = "cvrve/New-Grad-2025"  # Format: "username/repository"
 EMAIL_SENDER = os.getenv("EMAIL")
@@ -66,20 +68,30 @@ def save_last_commit_sha(commit_sha):
 last_commit_sha = None
 
 def get_new_commits():
+    global last_commit_sha
     last_commit_sha = load_last_commit_sha()
+    
     url = f"https://api.github.com/repos/{GITHUB_REPO}/commits"
-    response = requests.get(url)
+    headers = {
+        "Authorization": f"Bearer {GITHUB_TOKEN}"
+    }
+    response = requests.get(url, headers=headers)
     
     if response.status_code == 200:
         commits = response.json()
         new_commits = []
-        print(type(commits))
+        # print(type(commits))
 
         count = 0
         
         # Collect all commits up to the last seen commit
         for com in commits:
             count += 1
+
+            commit_sha = com['sha']
+            if commit_sha == last_commit_sha:
+                break
+
             commit_message = com['commit']['message']
             commit_dict = {
                 "sha": com['sha'],
@@ -111,17 +123,17 @@ def get_new_commits():
                     "locations": job_details["Locations"]
                 }
 
-            commit_sha = com['sha']
-            if commit_sha == last_commit_sha:
-                break
-            new_commits.append(commit_dict)
+                new_commits.append(commit_dict)
         
         print(f"Processed {count} commits.")
         # Update the last commit SHA if there are new commits
         if new_commits:
-            last_commit_sha = new_commits[-1]['sha']
+            last_commit_sha = new_commits[0]['sha']
             save_last_commit_sha(last_commit_sha)
             return new_commits[::]  
+        else:
+            print("No new commits found.")
+            return []
     else:
         print("Failed to retrieve repository data.")
     return []
@@ -164,6 +176,8 @@ def main():
             
             send_email(email_subject, email_message)
             print("New commits detected and email sent.")
+        else:
+            print("No new commits detected.")
         
         # Wait for the next check
         time.sleep(CHECK_INTERVAL)
